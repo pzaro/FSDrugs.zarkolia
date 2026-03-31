@@ -6,480 +6,431 @@
     <title>Απογραφή Ναρκωτικών Φαρμακείου - Zarkolia Health</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; padding: 20px; color: #333; }
+        :root { --primary-blue: #0056b3; --danger-red: #d9534f; --light-blue: #eef5fb; --success-green: #28a745; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; padding: 20px; color: #333; line-height: 1.4; }
         
-        /* Το κυρίως έγγραφο που θα γίνει PDF */
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
+        .header-box { text-align: center; border-bottom: 2px solid var(--primary-blue); margin-bottom: 25px; padding-bottom: 10px; }
+        h1 { font-size: 20px; color: var(--primary-blue); text-transform: uppercase; margin: 10px 0; }
         
-        .header-box { text-align: center; border-bottom: 2px solid #0056b3; margin-bottom: 20px; padding-bottom: 5px; }
-        h1 { font-size: 18px; color: #0056b3; text-transform: uppercase; margin: 10px 0; }
+        .target-info { width: 60%; border: 1px solid #333; padding: 15px; background: #f8f9fa; margin-left: auto; margin-bottom: 30px; border-radius: 4px; }
+        .section-title { font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; color: var(--primary-blue); }
         
-        .target-info { width: 50%; border: 1px solid #333; padding: 10px; background: #f8f9fa; margin-left: auto; margin-bottom: 20px; }
-        .applicant-info { width: 100%; margin-top: 20px; }
-        .section-title { font-size: 15px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; color: #0056b3; }
+        .field { margin-bottom: 10px; display: flex; align-items: center; border-bottom: 1px dotted #999; }
+        .field label { font-weight: bold; width: 180px; font-size: 13px; }
         
-        .field { margin-bottom: 8px; display: flex; align-items: center; border-bottom: 1px dotted #999; }
-        .field label { font-weight: bold; width: 150px; font-size: 13px; }
-        
-        /* Ειδική μορφοποίηση για τα πεδία εισαγωγής ώστε να είναι ΕΜΦΑΝΗ */
-        .user-input { border: 1px solid #0056b3 !important; background-color: #eef5fb !important; border-radius: 4px; padding: 4px; outline: none; transition: 0.3s; }
+        .user-input { border: 1px solid var(--primary-blue) !important; background-color: var(--light-blue) !important; border-radius: 4px; padding: 6px; outline: none; transition: 0.3s; flex: 1; font-size: 13px; }
         .user-input:focus { background-color: #d6e8fa !important; border-width: 2px !important; }
         
-        /* Κλάση για την εκτύπωση (καθαρίζει τα πεδία) */
-        .print-mode { border: none !important; background: transparent !important; border-bottom: 1px dotted #000 !important; border-radius: 0 !important; }
-        
-        .field input { flex: 1; font-size: 13px; }
-        textarea.address-box { width: 100%; height: 70px; font-size: 12px; font-family: inherit; resize: none; margin-top: 5px; line-height: 1.4; box-sizing: border-box;}
-        .year-input { width: 60px; text-align: center; font-size: 14px; font-weight: bold; font-family: inherit; }
-        .date-input { font-size: 14px; font-family: inherit; text-align: center; cursor: pointer; }
+        .search-container { margin: 25px 0; position: sticky; top: 10px; z-index: 100; }
+        #drugSearch { width: 100%; padding: 15px 25px; border: 3px solid var(--primary-blue); border-radius: 35px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); outline: none; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
-        th, td { border: 1px solid #444; padding: 4px; text-align: left; vertical-align: middle; }
-        th { background-color: #0056b3; color: white; text-align: center; font-size: 12px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; vertical-align: middle; }
+        th { background-color: var(--primary-blue); color: white; text-align: center; font-size: 12px; position: sticky; top: 80px; }
+        tr:nth-child(even) { background-color: #fcfcfc; }
+        tr.hidden { display: none; }
         tr { page-break-inside: avoid !important; }
         
-        .drug-name { font-weight: bold; display: block; font-size: 12px; }
+        .drug-name { font-weight: bold; display: block; font-size: 12px; color: #000; }
         .drug-sub { font-size: 10px; color: #555; font-style: italic; }
-        .stock-input { width: 50px; text-align: center; font-size: 11px; }
+        .limit-label { color: var(--danger-red); font-weight: bold; font-size: 10px; margin-top: 3px; display: block; }
+        .stock-input { width: 70px; text-align: center; font-size: 14px; font-weight: bold; }
 
-        /* Controls & Zarkolia */
-        .controls-container { max-width: 1000px; margin: 0 auto 15px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; border-left: 5px solid #0056b3; }
-        .btn { padding: 10px 20px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.2s; }
-        .btn:hover { background: #004494; }
-        .consent-box { margin-top: 10px; font-size: 12px; color: #555; display: inline-block; text-align: left; background: #f1f8ff; padding: 8px 12px; border-radius: 5px; border: 1px solid #cce5ff; }
+        .controls-container { max-width: 1100px; margin: 0 auto 15px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; border-left: 6px solid var(--success-green); }
+        .btn { padding: 15px 35px; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 17px; font-weight: bold; transition: 0.2s; }
+        .btn:hover { background: #004494; transform: translateY(-2px); }
+        .consent-box { margin-top: 15px; font-size: 13px; color: #555; display: inline-block; text-align: left; background: #f1f8ff; padding: 12px; border-radius: 6px; border: 1px solid #cce5ff; }
 
-        /* Ενότητα Πληροφοριών & Νομοθεσίας (Δεν τυπώνεται ποτέ) */
-        .info-section { max-width: 1000px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .info-section h2 { color: #d9534f; font-size: 18px; border-bottom: 2px solid #d9534f; padding-bottom: 5px; margin-top: 0; }
-        .info-section h3 { color: #0056b3; font-size: 15px; margin-top: 20px; margin-bottom: 5px;}
-        .info-section p, .info-section li { font-size: 13px; line-height: 1.6; color: #444; margin-top: 5px; }
-        .law-link { display: inline-block; background: #f8f9fa; border: 1px solid #ddd; padding: 8px 12px; border-radius: 4px; text-decoration: none; color: #0056b3; font-weight: bold; margin: 5px 0; transition: 0.2s; font-size: 13px; }
-        .law-link:hover { background: #eef5fb; border-color: #0056b3; }
-        .law-block { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
+        .info-section { max-width: 1100px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .info-section h2 { color: var(--danger-red); border-bottom: 2px solid var(--danger-red); padding-bottom: 8px; font-size: 19px; }
+        .law-link { display: inline-block; background: #f8f9fa; border: 1px solid #ddd; padding: 10px 15px; border-radius: 5px; text-decoration: none; color: var(--primary-blue); font-weight: bold; margin: 5px 0; font-size: 13px; }
+        .law-link:hover { background: var(--light-blue); }
+        .developer-credit { max-width: 1100px; margin: 25px auto; background: #fff; padding: 25px; border-radius: 8px; border-top: 5px solid var(--success-green); text-align: center; font-size: 16px; color: #222; }
 
-        /* Credits Developer */
-        .developer-credit { max-width: 1000px; margin: 20px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; border-top: 3px solid #28a745; font-size: 14px; color: #333; line-height: 1.5; }
-
-        @media print {
-            .no-print { display: none !important; }
-        }
+        .print-mode { border: none !important; background: transparent !important; border-bottom: 1px dotted #000 !important; border-radius: 0 !important; }
+        @media print { .no-print { display: none !important; } .container { box-shadow: none; border: none; width: 100%; padding: 0; } }
         .page-break { page-break-before: always; }
+        textarea.address-box { width: 100%; height: 80px; font-size: 12px; font-family: inherit; resize: none; line-height: 1.5; box-sizing: border-box;}
     </style>
 </head>
 <body>
 
 <div class="controls-container no-print">
-    <button class="btn" onclick="processAndDownload()">Κατέβασμα Απογραφής (PDF)</button>
+    <button class="btn" onclick="processAndDownload()">📤 Υποβολή & Κατέβασμα Απογραφής (PDF)</button>
     <br>
     <div class="consent-box">
         <label>
             <input type="checkbox" id="zarkolia-consent" checked>
-            Συναινώ στην επεξεργασία των προσωπικών μου δεδομένων για την αποστολή επιστημονικού υλικού και ενημερώσεων από την <strong>Zarkolia Health</strong>.
+            Συναινώ στην επεξεργασία των προσωπικών μου δεδομένων για την αποστολή επιστημονικού υλικού από την <strong>Zarkolia Health</strong>.
         </label>
     </div>
 </div>
 
 <div class="container" id="form-content">
-    
-    <div class="header-box">
-        <h1>Α Ι Τ Η Σ Η</h1>
-    </div>
+    <div class="header-box"><h1>Α Ι Τ Η Σ Η</h1></div>
 
     <div class="target-info">
-        <h3 style="margin-top:0; margin-bottom: 5px; font-size:14px;">Π Ρ Ο Σ :</h3>
-        <div style="margin-bottom: 5px;" class="no-print">
-            <select id="region-select" class="user-input" onchange="updateAddress()" style="width:100%; font-weight:bold; font-size: 12px;">
-                <option value="">-- Επιλέξτε Περιφερειακή Ενότητα --</option>
-                <option value="ΠΕ Κεντρικού Τομέα Αθηνών">ΠΕ Κεντρικού Τομέα Αθηνών</option>
-                <option value="ΠΕ Βόρειου Τομέα Αθηνών">ΠΕ Βόρειου Τομέα Αθηνών</option>
-                <option value="ΠΕ Δυτικού Τομέα Αθηνών">ΠΕ Δυτικού Τομέα Αθηνών</option>
-                <option value="ΠΕ Νοτίου Τομέα Αθηνών">ΠΕ Νοτίου Τομέα Αθηνών</option>
-                <option value="ΠΕ Πειραιά">ΠΕ Πειραιά</option>
-                <option value="ΠΕ Ανατολικής Αττικής">ΠΕ Ανατολικής Αττικής</option>
-                <option value="ΠΕ Δυτικής Αττικής">ΠΕ Δυτικής Αττικής</option>
-                <option value="ΠΕ Νήσων Αττικής">ΠΕ Νήσων Αττικής</option>
-                <option value="ΠΕ Θεσσαλονίκης">ΠΕ Θεσσαλονίκης</option>
-                <option value="ΠΕ Χαλκιδικής">ΠΕ Χαλκιδικής</option>
-                <option value="ΠΕ Σερρών">ΠΕ Σερρών</option>
-                <option value="ΠΕ Κιλκίς">ΠΕ Κιλκίς</option>
-                <option value="ΠΕ Πέλλας">ΠΕ Πέλλας</option>
-                <option value="ΠΕ Ημαθίας">ΠΕ Ημαθίας</option>
-                <option value="ΠΕ Πιερίας">ΠΕ Πιερίας</option>
-                <option value="ΠΕ Κοζάνης">ΠΕ Κοζάνης</option>
-                <option value="ΠΕ Φλώρινας">ΠΕ Φλώρινας</option>
-                <option value="ΠΕ Καστοριάς">ΠΕ Καστοριάς</option>
-                <option value="ΠΕ Γρεβενών">ΠΕ Γρεβενών</option>
-                <option value="ΠΕ Λάρισας">ΠΕ Λάρισας</option>
-                <option value="ΠΕ Μαγνησίας">ΠΕ Μαγνησίας</option>
-                <option value="ΠΕ Τρικάλων">ΠΕ Τρικάλων</option>
-                <option value="ΠΕ Καρδίτσας">ΠΕ Καρδίτσας</option>
-                <option value="ΠΕ Ιωαννίνων">ΠΕ Ιωαννίνων</option>
-                <option value="ΠΕ Άρτας">ΠΕ Άρτας</option>
-                <option value="ΠΕ Πρέβεζας">ΠΕ Πρέβεζας</option>
-                <option value="ΠΕ Θεσπρωτίας">ΠΕ Θεσπρωτίας</option>
-                <option value="ΠΕ Αχαΐας">ΠΕ Αχαΐας</option>
-                <option value="ΠΕ Ηλείας">ΠΕ Ηλείας</option>
-                <option value="ΠΕ Αιτωλοακαρνανίας">ΠΕ Αιτωλοακαρνανίας</option>
-                <option value="ΠΕ Μεσσηνίας">ΠΕ Μεσσηνίας</option>
-                <option value="ΠΕ Λακωνίας">ΠΕ Λακωνίας</option>
-                <option value="ΠΕ Αρκαδίας">ΠΕ Αρκαδίας</option>
-                <option value="ΠΕ Αργολίδας">ΠΕ Αργολίδας</option>
-                <option value="ΠΕ Κορινθίας">ΠΕ Κορινθίας</option>
-                <option value="ΠΕ Εύβοιας">ΠΕ Εύβοιας</option>
-                <option value="ΠΕ Φθιώτιδας">ΠΕ Φθιώτιδας</option>
-                <option value="ΠΕ Βοιωτίας">ΠΕ Βοιωτίας</option>
-                <option value="ΠΕ Φωκίδας">ΠΕ Φωκίδας</option>
-                <option value="ΠΕ Ευρυτανίας">ΠΕ Ευρυτανίας</option>
-                <option value="ΠΕ Λέσβου">ΠΕ Λέσβου</option>
-                <option value="ΠΕ Χίου">ΠΕ Χίου</option>
-                <option value="ΠΕ Σάμου">ΠΕ Σάμου</option>
-                <option value="ΠΕ Κυκλάδων">ΠΕ Κυκλάδων</option>
-                <option value="ΠΕ Δωδεκανήσου">ΠΕ Δωδεκανήσου</option>
-                <option value="ΠΕ Ηρακλείου">ΠΕ Ηρακλείου</option>
-                <option value="ΠΕ Χανίων">ΠΕ Χανίων</option>
-                <option value="ΠΕ Ρεθύμνου">ΠΕ Ρεθύμνου</option>
-                <option value="ΠΕ Λασιθίου">ΠΕ Λασιθίου</option>
+        <h3 style="margin:0 0 8px 0; font-size:14px;">Π Ρ Ο Σ :</h3>
+        <div class="no-print" style="margin-bottom: 10px;">
+            <select id="region-select" class="user-input" onchange="updateAddress()">
+                <option value="">-- Επιλέξτε Περιφερειακή Ενότητα (ΠΕ) --</option>
+                <optgroup label="Αττική">
+                    <option value="ΠΕ Κεντρικού Τομέα Αθηνών">ΠΕ Κεντρικού Τομέα Αθηνών</option>
+                    <option value="ΠΕ Βόρειου Τομέα Αθηνών">ΠΕ Βόρειου Τομέα Αθηνών</option>
+                    <option value="ΠΕ Δυτικού Τομέα Αθηνών">ΠΕ Δυτικού Τομέα Αθηνών</option>
+                    <option value="ΠΕ Νοτίου Τομέα Αθηνών">ΠΕ Νοτίου Τομέα Αθηνών</option>
+                    <option value="ΠΕ Πειραιά">ΠΕ Πειραιά</option>
+                    <option value="ΠΕ Ανατολικής Αττικής">ΠΕ Ανατολικής Αττικής</option>
+                    <option value="ΠΕ Δυτικής Αττικής">ΠΕ Δυτικής Αττικής</option>
+                    <option value="ΠΕ Νήσων Αττικής">ΠΕ Νήσων Αττικής</option>
+                </optgroup>
+                <optgroup label="Θεσσαλονίκη & Μακεδονία">
+                    <option value="ΠΕ Θεσσαλονίκης">ΠΕ Θεσσαλονίκης</option>
+                    <option value="ΠΕ Πέλλας">ΠΕ Πέλλας</option>
+                    <option value="ΠΕ Ημαθίας">ΠΕ Ημαθίας</option>
+                    <option value="ΠΕ Σερρών">ΠΕ Σερρών</option>
+                    <option value="ΠΕ Κιλκίς">ΠΕ Κιλκίς</option>
+                    <option value="ΠΕ Πιερίας">ΠΕ Πιερίας</option>
+                    <option value="ΠΕ Χαλκιδικής">ΠΕ Χαλκιδικής</option>
+                    <option value="ΠΕ Κοζάνης">ΠΕ Κοζάνης</option>
+                    <option value="ΠΕ Φλώρινας">ΠΕ Φλώρινας</option>
+                    <option value="ΠΕ Καστοριάς">ΠΕ Καστοριάς</option>
+                    <option value="ΠΕ Γρεβενών">ΠΕ Γρεβενών</option>
+                </optgroup>
+                <optgroup label="Υπόλοιπη Ελλάδα">
+                    <option value="ΠΕ Λάρισας">ΠΕ Λάρισας</option>
+                    <option value="ΠΕ Μαγνησίας">ΠΕ Μαγνησίας</option>
+                    <option value="ΠΕ Τρικάλων">ΠΕ Τρικάλων</option>
+                    <option value="ΠΕ Καρδίτσας">ΠΕ Καρδίτσας</option>
+                    <option value="ΠΕ Αχαΐας">ΠΕ Αχαΐας</option>
+                    <option value="ΠΕ Ηλείας">ΠΕ Ηλείας</option>
+                    <option value="ΠΕ Αιτωλοακαρνανίας">ΠΕ Αιτωλοακαρνανίας</option>
+                    <option value="ΠΕ Ιωαννίνων">ΠΕ Ιωαννίνων</option>
+                    <option value="ΠΕ Άρτας">ΠΕ Άρτας</option>
+                    <option value="ΠΕ Πρέβεζας">ΠΕ Πρέβεζας</option>
+                    <option value="ΠΕ Θεσπρωτίας">ΠΕ Θεσπρωτίας</option>
+                    <option value="ΠΕ Εύβοιας">ΠΕ Εύβοιας</option>
+                    <option value="ΠΕ Φθιώτιδας">ΠΕ Φθιώτιδας</option>
+                    <option value="ΠΕ Βοιωτίας">ΠΕ Βοιωτίας</option>
+                    <option value="ΠΕ Φωκίδας">ΠΕ Φωκίδας</option>
+                    <option value="ΠΕ Ευρυτανίας">ΠΕ Ευρυτανίας</option>
+                    <option value="ΠΕ Μεσσηνίας">ΠΕ Μεσσηνίας</option>
+                    <option value="ΠΕ Λακωνίας">ΠΕ Λακωνίας</option>
+                    <option value="ΠΕ Αρκαδίας">ΠΕ Αρκαδίας</option>
+                    <option value="ΠΕ Αργολίδας">ΠΕ Αργολίδας</option>
+                    <option value="ΠΕ Κορινθίας">ΠΕ Κορινθίας</option>
+                    <option value="ΠΕ Λέσβου">ΠΕ Λέσβου</option>
+                    <option value="ΠΕ Χίου">ΠΕ Χίου</option>
+                    <option value="ΠΕ Σάμου">ΠΕ Σάμου</option>
+                    <option value="ΠΕ Κυκλάδων">ΠΕ Κυκλάδων</option>
+                    <option value="ΠΕ Δωδεκανήσου">ΠΕ Δωδεκανήσου</option>
+                    <option value="ΠΕ Ηρακλείου">ΠΕ Ηρακλείου</option>
+                    <option value="ΠΕ Χανίων">ΠΕ Χανίων</option>
+                    <option value="ΠΕ Ρεθύμνου">ΠΕ Ρεθύμνου</option>
+                    <option value="ΠΕ Λασιθίου">ΠΕ Λασιθίου</option>
+                </optgroup>
             </select>
         </div>
-        <div id="print-region-title" style="font-weight:bold; font-size: 13px; margin-bottom:2px;"></div>
-        <textarea id="region-address" class="address-box user-input" placeholder="Επιλέξτε Περιφερειακή Ενότητα..."></textarea>
+        <div id="print-region-title" style="font-weight:bold; font-size: 14px; margin-bottom:2px; color: #000;"></div>
+        <textarea id="region-address" class="address-box user-input" placeholder="Η διεύθυνση θα συμπληρωθεί αυτόματα..."></textarea>
     </div>
 
-    <div style="text-align:justify; margin-bottom:15px; line-height:1.5; font-size: 14px;">
-        <p style="margin: 0 0 5px 0;">Παρακαλώ, όπως σας υποβάλλω:</p>
-        <p style="margin: 0 0 5px 20px;">
+    <div style="text-align:justify; margin-bottom:20px; line-height:1.6; font-size: 15px;">
+        <p style="margin:0;">Παρακαλώ, όπως σας υποβάλλω:</p>
+        <p style="margin:5px 0 5px 25px;">
             <strong>α)</strong> την ετήσια κατάσταση κίνησης ναρκωτικών φαρμάκων του κρατικού μονοπωλίου και<br>
             <strong>β)</strong> την ετήσια κατάσταση φαρμάκων των πινάκων Γ/Δ του ν.4139/2013
         </p>
-        <p style="margin: 0;">που αφορούν στο φαρμακείο μου για τα υπόλοιπα της 31ης Δεκεμβρίου <input type="text" id="apografi_year" class="year-input user-input" placeholder="ΕΤΟΣ">.</p>
+        <p style="margin:0;">που αφορούν στο φαρμακείο μου για τα υπόλοιπα της 31ης Δεκεμβρίου <input type="text" id="apografi_year" class="year-input user-input" placeholder="ΕΤΟΣ" style="width: 80px;">.</p>
     </div>
 
     <div class="applicant-info">
         <div class="section-title">Στοιχεία Αιτούντος Φαρμακοποιού</div>
         <div class="field"><label>Επώνυμο:</label><input type="text" id="ph_surname" class="user-input"></div>
         <div class="field"><label>Όνομα:</label><input type="text" id="ph_name" class="user-input"></div>
-        <div class="field"><label>Πατρώνυμο:</label><input type="text" class="user-input"></div>
-        <div class="field"><label>Μητρώνυμο:</label><input type="text" class="user-input"></div>
-        <div class="field"><label>Δ/νση κατοικίας:</label><input type="text" class="user-input"></div>
-        <div class="field"><label>Οδός Φαρμακείου:</label><input type="text" class="user-input"></div>
+        <div class="field"><label>Πατρώνυμο / Μητρώνυμο:</label><input type="text" class="user-input"></div>
+        <div class="field"><label>Διεύθυνση Φαρμακείου:</label><input type="text" class="user-input"></div>
         <div class="field"><label>Τηλέφωνο:</label><input type="text" id="ph_phone" class="user-input"></div>
         <div class="field"><label>Email:</label><input type="email" id="ph_email" class="user-input"></div>
     </div>
 
+    <div style="display:flex; justify-content: space-between; margin-top:35px; font-size: 14px;">
+        <div>Ημερομηνία Αίτησης<br><input type="date" id="form_date" class="date-input user-input" style="margin-top:8px;"></div>
+        <div style="text-align:center;">Ο/Η Φαρμακοποιός<br><br><br><br>(Σφραγίδα - Υπογραφή)</div>
+    </div>
+
     <div class="page-break"></div>
-    <div class="header-box">
-        <h1>ΚΑΤΑΣΤΑΣΗ ΑΠΟΓΡΑΦΗΣ ΝΑΡΚΩΤΙΚΩΝ (ΥΠΟΛΟΙΠΑ 31/12)</h1>
+    <div class="header-box"><h1>ΚΑΤΑΣΤΑΣΗ ΑΠΟΓΡΑΦΗΣ ΝΑΡΚΩΤΙΚΩΝ ΟΥΣΙΩΝ (31/12)</h1></div>
+    
+    <div class="search-container no-print">
+        <input type="text" id="drugSearch" onkeyup="liveSearch()" placeholder="🔍 Αναζήτηση Φαρμάκου ή Δραστικής (π.χ. Xanax, Diazepam, 5mg)...">
     </div>
 
     <table id="drugs-table">
         <thead>
             <tr>
-                <th style="width:30px;">Α/Α</th>
-                <th>Φάρμακο (Δραστική Ουσία - Μέγιστη Δόση)</th>
-                <th style="width:50px;">Πίνακας</th>
-                <th style="width:80px;">Υπόλοιπο</th>
+                <th style="width:35px;">Α/Α</th>
+                <th>Φάρμακο & Δραστική Ουσία (Μέγιστη Ημερήσια Δόση)</th>
+                <th style="width:45px;">Πιν.</th>
+                <th style="width:90px;">Υπόλοιπο</th>
             </tr>
         </thead>
         <tbody id="table-body">
             </tbody>
     </table>
-
-    <div style="display:flex; justify-content: space-between; margin-top:30px; padding:10px; font-size: 13px;">
-        <div style="text-align:center;">
-            Ημερομηνία<br>
-            <input type="date" class="date-input user-input" style="margin-top: 5px;">
-        </div>
-        <div style="text-align:center;">
-            Ο/Η Φαρμακοποιός<br><br><br><br>(Σφραγίδα - Υπογραφή)
-        </div>
-    </div>
 </div>
+
 <div class="info-section no-print">
-    <h2>Νομοθεσία & Χρηστικές Πληροφορίες για Φαρμακοποιούς</h2>
-    
+    <h2>Νομοθεσία & Χρηστικές Πληροφορίες</h2>
     <div class="law-block">
-        <h3>1. Κώδικας Νόμων για τα Ναρκωτικά</h3>
-        <p><strong>Νόμος 3459/2006 (ΦΕΚ Α΄ 103 / 25-05-2006)</strong></p>
-        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20060100103" target="_blank" class="law-link">📄 Λήψη ΦΕΚ: Ν.3459/2006</a>
-        <p>Ο νόμος αυτός αποτελεί τον βασικό κορμό της ελληνικής νομοθεσίας για τα ναρκωτικά. Στο <strong>άρθρο 1</strong> ορίζεται τι θεωρείται ναρκωτικό (ουσίες που δρουν στο ΚΝΣ και προκαλούν εξάρτηση) και οι ουσίες κατατάσσονται σε τέσσερις πίνακες (Α, Β, Γ, Δ).<br>
-        <strong>Ειδικά για τα φαρμακεία ισχύουν τα Άρθρα 13, 14, 15</strong>, τα οποία ρυθμίζουν την πώληση ναρκωτικών, την τήρηση του βιβλίου ναρκωτικών, καθώς και τη φύλαξη/έλεγχο.</p>
+        <h3>1. Κώδικας Νόμων για τα Ναρκωτικά (Κ.Ν.Ν.)</h3>
+        <p><strong>Νόμος 3459/2006 (ΦΕΚ Α΄ 103)</strong> - Άρθρα 13, 14, 15 (Υποχρεώσεις Φαρμακείων).</p>
+        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20060100103" target="_blank" class="law-link">📄 Προβολή ΦΕΚ Ν.3459/2006</a>
     </div>
-
     <div class="law-block">
-        <h3>2. Νόμος για εξαρτησιογόνες ουσίες</h3>
-        <p><strong>Νόμος 4139/2013 (ΦΕΚ Α΄ 74 / 20-03-2013)</strong></p>
-        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20130100074" target="_blank" class="law-link">📄 Λήψη ΦΕΚ: Ν.4139/2013</a>
-        <p>Αντικατέστησε μεγάλο μέρος του προηγούμενου πλαισίου. Ρύθμισε την ιατρική χρήση ναρκωτικών και καθόρισε νέους κανόνες διάθεσης και ελέγχου. Αποτελεί σήμερα τον βασικό νόμο που χρησιμοποιείται συνδυαστικά με τον Ν.3459/2006.</p>
+        <h3>2. Νόμος για Εξαρτησιογόνες Ουσίες</h3>
+        <p><strong>Νόμος 4139/2013 (ΦΕΚ Α΄ 74)</strong> - Βασικό πλαίσιο ιατρικής χρήσης.</p>
+        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20130100074" target="_blank" class="law-link">📄 Προβολή ΦΕΚ Ν.4139/2013</a>
     </div>
-
     <div class="law-block">
-        <h3>3. Ρυθμίσεις συνταγογράφησης οπιοειδών</h3>
-        <p><strong>Νόμος 4600/2019 (ΦΕΚ Α΄ 43 / 09-03-2019)</strong></p>
-        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20190100043" target="_blank" class="law-link">📄 Λήψη ΦΕΚ: Ν.4600/2019</a>
-        <p>Ο νόμος περιλαμβάνει σημαντικές ρυθμίσεις για τη συνταγογράφηση οπιοειδών αναλγητικών, την υποχρεωτική ηλεκτρονική συνταγογράφηση και τους κανόνες χορήγησης σε ασθενείς με χρόνιο πόνο.</p>
+        <h3>3. Ηλεκτρονική Συνταγογράφηση & Οπιοειδή</h3>
+        <p><strong>Νόμος 4600/2019 (ΦΕΚ Α΄ 43)</strong> - Ρυθμίσεις για οπιοειδή αναλγητικά και χρόνιο πόνο.</p>
+        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20190100043" target="_blank" class="law-link">📄 Προβολή ΦΕΚ Ν.4600/2019</a>
     </div>
-
     <div class="law-block">
-        <h3>4. Υπουργικές Αποφάσεις (Πίνακες & Δόσεις)</h3>
-        <p>Οι πίνακες ναρκωτικών τροποποιούνται συχνά. Οι παρακάτω αποφάσεις εντάσσουν ουσίες στους πίνακες, καθορίζουν μέγιστες ημερήσιες δόσεις και ρυθμίζουν τη διάθεση φαρμάκων (όπως fentanyl, tramadol):</p>
-        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20080200769" target="_blank" class="law-link">📄 ΥΑ ΔΥΓ3γ/54568/2008 (ΦΕΚ Β΄ 769 / 30-04-2008)</a><br>
-        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20090201847" target="_blank" class="law-link">📄 ΥΑ ΔΥΓ3γ/81187/2009 (ΦΕΚ Β΄ 1847 / 03-09-2009)</a>
-    </div>
-
-    <div class="law-block" style="border-bottom: none;">
-        <h3>💊 Επεξήγηση Πινάκων & Πρακτικές Οδηγίες</h3>
-        <ul>
-            <li><strong>Πίνακας Β':</strong> Φάρμακα Κρατικού Μονοπωλίου (π.χ. Μορφίνη, Πεθιδίνη). Συνταγογραφούνται μέσω ΗΔΙΚΑ. Η εκτυπωμένη <strong>Ηλεκτρονική Ειδική Συνταγή Ναρκωτικών</strong> επέχει πλέον τη θέση της παλιάς χειρόγραφης "δίγραμμης/κόκκινης". Απαιτείται έλεγχος ταυτότητας, υπογραφή παραλαβόντος και φύλαξη για 3 έτη. Ενημερώνεται το Βιβλίο Ναρκωτικών.</li>
-            <li><strong>Πίνακας Γ':</strong> Ουσίες (π.χ. Φαιντανύλη, Μεθυλφαινιδάτη) που χορηγούνται με ηλεκτρονική Ειδική Συνταγή (αντικαθιστά τη "μονόγραμμη"). Το χαρτί υπογράφεται και φυλάσσεται για 3 χρόνια.</li>
-            <li><strong>Πίνακας ΓΣ:</strong> Συνδυασμοί ουσίας Πίνακα Γ με άλλη μη ναρκωτική (π.χ. Paracetamol + Codeine / Lonalgal). Χορηγούνται με απλή συνταγή που φυλάσσεται επίσης για 3 έτη.</li>
-            <li><strong>Πίνακας Δ':</strong> Φάρμακα μικρότερης εξάρτησης (Βενζοδιαζεπίνες π.χ. Lexotanil, Xanax). Χορηγούνται με απλή συνταγή που κρατείται στο αρχείο για 3 χρόνια.</li>
-        </ul>
+        <h3>4. Υπουργικές Αποφάσεις Πινάκων & Δόσεων</h3>
+        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20080200769" target="_blank" class="law-link">📄 ΥΑ 2008 (ΦΕΚ Β 769)</a>
+        <a href="https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20090201847" target="_blank" class="law-link">📄 ΥΑ 2009 (ΦΕΚ Β 1847)</a>
     </div>
 </div>
 
 <div class="developer-credit no-print">
-    <p style="margin: 0;">Το παρόν πρόγραμμα έχει αναπτυχθεί από τον <strong>Παναγιώτη Ζαρογουλίδη</strong>, Φαρμακοποιό, MSc, MBA, Διαμεσολαβητή, για όλους τους φαρμακοποιούς της χώρας.</p>
+    Το παρόν πρόγραμμα έχει αναπτυχθεί από τον <strong>Παναγιώτη Ζαρογουλίδη</strong>, Φαρμακοποιό, MSc, MBA, Διαμεσολαβητή, για όλους τους φαρμακοποιούς της χώρας.
 </div>
 
 <script>
-    // ΣΗΜΑΝΤΙΚΟ: Το URL του Google Apps Script για την αποθήκευση των στοιχείων!
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVlcMrSoLThTDlYNOViS-i6vB-ifxCeGFoThjDgbbjaUeOx3q4qXcriwUCsvoCw3jL/exec";
 
     const regionAddresses = {
-        "ΠΕ Κεντρικού Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΛεωφόρος Αλεξάνδρας 196, 11521 Αθήνα",
-        "ΠΕ Βόρειου Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΛεωφόρος Κηφισίας 20, 11526 Αθήνα",
-        "ΠΕ Δυτικού Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΘηβών 250, 12244 Αιγάλεω",
-        "ΠΕ Νοτίου Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΘεομήτορος 59, 17455 Άλιμος",
-        "ΠΕ Πειραιά": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΗρώων Πολυτεχνείου 19, 18535 Πειραιάς",
-        "ΠΕ Ανατολικής Αττικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\n17ο χλμ Λεωφόρου Μαραθώνος, 15351 Παλλήνη",
-        "ΠΕ Δυτικής Αττικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΗρώων Πολυτεχνείου 78, 19200 Ελευσίνα",
-        "ΠΕ Νήσων Αττικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΑκτή Ποσειδώνος 14, 18531 Πειραιάς",
-        "ΠΕ Θεσσαλονίκης": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\n26ης Οκτωβρίου 64, 54627 Θεσσαλονίκη",
-        "ΠΕ Χαλκιδικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 63100 Πολύγυρος",
-        "ΠΕ Σερρών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚωνσταντίνου Καραμανλή 36, 62122 Σέρρες",
-        "ΠΕ Κιλκίς": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\n21ης Ιουνίου 207, 61100 Κιλκίς",
-        "ΠΕ Πέλλας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 58200 Έδεσσα",
-        "ΠΕ Ημαθίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΜητροπόλεως 44, 59132 Βέροια",
-        "ΠΕ Πιερίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\n28ης Οκτωβρίου 40, 60100 Κατερίνη",
-        "ΠΕ Λάρισας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠαπαναστασίου 90, 41222 Λάρισα",
-        "ΠΕ Μαγνησίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 38334 Βόλος",
-        "ΠΕ Τρικάλων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΒασιλείου Τσιτσάνη 31, 42132 Τρίκαλα",
-        "ΠΕ Καρδίτσας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚουμουνδούρου 29, 43132 Καρδίτσα",
-        "ΠΕ Αχαΐας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΝΕΟ Πατρών – Αθηνών 156, 26443 Πάτρα",
-        "ΠΕ Ηλείας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΜανωλοπούλου 47, 27100 Πύργος",
-        "ΠΕ Αιτωλοακαρνανίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚύπρου 30, 30131 Αγρίνιο",
-        "ΠΕ Κοζάνης": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔημοκρατίας 27, 50100 Κοζάνη",
-        "ΠΕ Φλώρινας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 53100 Φλώρινα",
-        "ΠΕ Καστοριάς": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 52100 Καστοριά",
-        "ΠΕ Γρεβενών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 51100 Γρεβενά",
-        "ΠΕ Ιωαννίνων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠλατεία Πύρρου 1, 45221 Ιωάννινα",
-        "ΠΕ Άρτας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΣκουφά 79, 47100 Άρτα",
-        "ΠΕ Πρέβεζας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΣπηλιάδου 8, 48100 Πρέβεζα",
-        "ΠΕ Θεσπρωτίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚύπρου 3, 46100 Ηγουμενίτσα",
-        "ΠΕ Εύβοιας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΧαϊνά 93, 34100 Χαλκίδα",
-        "ΠΕ Φθιώτιδας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΥψηλάντου 1, 35100 Λαμία",
-        "ΠΕ Βοιωτίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΦίλωνος 35, 32131 Λιβαδειά",
-        "ΠΕ Φωκίδας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΓ. Γεννηματά 1, 33100 Άμφισσα",
-        "ΠΕ Ευρυτανίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚ. Καραμανλή 12, 36100 Καρπενήσι",
-        "ΠΕ Μεσσηνίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 24100 Καλαμάτα",
-        "ΠΕ Λακωνίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 23100 Σπάρτη",
-        "ΠΕ Αρκαδίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΝαυπλίου 57, 22100 Τρίπολη",
-        "ΠΕ Αργολίδας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠαραλιακή Ναυπλίου – Νέας Κίου, 21100 Ναύπλιο",
-        "ΠΕ Κορινθίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚροκιδά 2, 20100 Κόρινθος",
-        "ΠΕ Λέσβου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΚουντουριώτη 1, 81100 Μυτιλήνη",
-        "ΠΕ Χίου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 82100 Χίος",
-        "ΠΕ Σάμου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 83100 Σάμος",
-        "ΠΕ Κυκλάδων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠλατεία Τσιροπινά, 84100 Ερμούπολη",
-        "ΠΕ Δωδεκανήσου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠλατεία Ελευθερίας 1, 85100 Ρόδος",
-        "ΠΕ Ηρακλείου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠλατεία Ελευθερίας, 71201 Ηράκλειο",
-        "ΠΕ Χανίων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠλατεία Ελευθερίας 1, 73134 Χανιά",
-        "ΠΕ Ρεθύμνου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΠλατεία Ηρώων Πολυτεχνείου 1, 74100 Ρέθυμνο",
-        "ΠΕ Λασιθίου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΔιοικητήριο, 72100 Άγιος Νικόλαος"
+        "ΠΕ Κεντρικού Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΛεωφόρος Αλεξάνδρας 196, 11521 Αθήνα",
+        "ΠΕ Βόρειου Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΛεωφόρος Κηφισίας 20, 11526 Αθήνα",
+        "ΠΕ Δυτικού Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΘηβών 250, 12244 Αιγάλεω",
+        "ΠΕ Νοτίου Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΘεομήτορος 59, 17455 Άλιμος",
+        "ΠΕ Πειραιά": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΗρώων Πολυτεχνείου 19, 18535 Πειραιάς",
+        "ΠΕ Ανατολικής Αττικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\n17ο χλμ Λεωφόρου Μαραθώνος, 15351 Παλλήνη",
+        "ΠΕ Δυτικής Αττικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΗρώων Πολυτεχνείου 78, 19200 Ελευσίνα",
+        "ΠΕ Νήσων Αττικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΑκτή Ποσειδώνος 14, 18531 Πειραιάς",
+        "ΠΕ Θεσσαλονίκης": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\n26ης Οκτωβρίου 64, 54627 Θεσσαλονίκη",
+        "ΠΕ Χαλκιδικής": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 63100 Πολύγυρος",
+        "ΠΕ Σερρών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚωνσταντίνου Καραμανλή 36, 62122 Σέρρες",
+        "ΠΕ Κιλκίς": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\n21ης Ιουνίου 207, 61100 Κιλκίς",
+        "ΠΕ Πέλλας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 58200 Έδεσσα",
+        "ΠΕ Ημαθίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΜητροπόλεως 44, 59132 Βέροια",
+        "ΠΕ Πιερίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\n28ης Οκτωβρίου 40, 60100 Κατερίνη",
+        "ΠΕ Λάρισας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠαπαναστασίου 90, 41222 Λάρισα",
+        "ΠΕ Μαγνησίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 38334 Βόλος",
+        "ΠΕ Τρικάλων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΒασιλείου Τσιτσάνη 31, 42132 Τρίκαλα",
+        "ΠΕ Καρδίτσας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚουμουνδούρου 29, 43132 Καρδίτσα",
+        "ΠΕ Αχαΐας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΝΕΟ Πατρών – Αθηνών 156, 26443 Πάτρα",
+        "ΠΕ Ηλείας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΜανωλοπούλου 47, 27100 Πύργος",
+        "ΠΕ Αιτωλοακαρνανίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚύπρου 30, 30131 Αγρίνιο",
+        "ΠΕ Κοζάνης": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔημοκρατίας 27, 50100 Κοζάνη",
+        "ΠΕ Φλώρινας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 53100 Φλώρινα",
+        "ΠΕ Καστοριάς": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 52100 Καστοριά",
+        "ΠΕ Γρεβενών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 51100 Γρεβενά",
+        "ΠΕ Ιωαννίνων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠλατεία Πύρρου 1, 45221 Ιωάννινα",
+        "ΠΕ Άρτας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΣκουφά 79, 47100 Άρτα",
+        "ΠΕ Πρέβεζας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΣπηλιάδου 8, 48100 Πρέβεζα",
+        "ΠΕ Θεσπρωτίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚύπρου 3, 46100 Ηγουμενίτσα",
+        "ΠΕ Εύβοιας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΧαϊνά 93, 34100 Χαλκίδα",
+        "ΠΕ Φθιώτιδας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΥψηλάντου 1, 35100 Λαμία",
+        "ΠΕ Βοιωτίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΦίλωνος 35, 32131 Λιβαδειά",
+        "ΠΕ Φωκίδας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΓ. Γεννηματά 1, 33100 Άμφισσα",
+        "ΠΕ Ευρυτανίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚ. Καραμανλή 12, 36100 Καρπενήσι",
+        "ΠΕ Μεσσηνίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 24100 Καλαμάτα",
+        "ΠΕ Λακωνίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 23100 Σπάρτη",
+        "ΠΕ Αρκαδίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΝαυπλίου 57, 22100 Τρίπολη",
+        "ΠΕ Αργολίδας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠαραλιακή Ναυπλίου – Νέας Κίου, 21100 Ναύπλιο",
+        "ΠΕ Κορινθίας": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚροκιδά 2, 20100 Κόρινθος",
+        "ΠΕ Λέσβου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΚουντουριώτη 1, 81100 Μυτιλήνη",
+        "ΠΕ Χίου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 82100 Χίος",
+        "ΠΕ Σάμου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 83100 Σάμος",
+        "ΠΕ Κυκλάδων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠλατεία Τσιροπινά, 84100 Ερμούπολη",
+        "ΠΕ Δωδεκανήσου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠλατεία Ελευθερίας 1, 85100 Ρόδος",
+        "ΠΕ Ηρακλείου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠλατεία Ελευθερίας, 71201 Ηράκλειο",
+        "ΠΕ Χανίων": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠλατεία Ελευθερίας 1, 73134 Χανιά",
+        "ΠΕ Ρεθύμνου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΠλατεία Ηρώων Πολυτεχνείου 1, 74100 Ρέθυμνο",
+        "ΠΕ Λασιθίου": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΔιοικητήριο, 72100 Άγιος Νικόλαος"
     };
 
-    function updateAddress() {
-        const select = document.getElementById("region-select");
-        const regionValue = select.value;
-        const textArea = document.getElementById("region-address");
-        const printTitle = document.getElementById("print-region-title");
-
-        if(regionValue) {
-            printTitle.innerText = regionValue;
-            textArea.value = regionAddresses[regionValue];
-        } else {
-            printTitle.innerText = "";
-            textArea.value = "";
-        }
-    }
-
     const allDrugs = [
-        {n:"ABSTRAL SUBL.TAB 100MCG/TAB BTx30", p:"Γ", s:"Fentanyl (Max: 800mcg/δόση, έως 4 φορές/ημέρα)"},
-        {n:"ABSTRAL SUBL.TAB 200MCG/TAB BTx30", p:"Γ", s:"Fentanyl (Max: 800mcg/δόση, έως 4 φορές/ημέρα)"},
-        {n:"ABSTRAL SUBL.TAB 300MCG/TAB BTx30", p:"Γ", s:"Fentanyl (Max: 800mcg/δόση, έως 4 φορές/ημέρα)"},
-        {n:"ABSTRAL SUBL.TAB 400MCG/TAB BTx30", p:"Γ", s:"Fentanyl (Max: 800mcg/δόση, έως 4 φορές/ημέρα)"},
-        {n:"ABSTRAL SUBL.TAB 600MCG/TAB BTx30", p:"Γ", s:"Fentanyl (Max: 800mcg/δόση, έως 4 φορές/ημέρα)"},
-        {n:"ABSTRAL SUBL.TAB 800MCG/TAB BTx30", p:"Γ", s:"Fentanyl (Max: 800mcg/δόση, έως 4 φορές/ημέρα)"},
-        {n:"ACTIQ LOZ 1200MCG/LOZEN BTx30", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 1600MCG/LOZEN BTx3", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 1600MCG/LOZEN BTx30", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 200MCG/LOZEN BTx3", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 200MCG/LOZEN BTx30", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 400MCG/LOZEN BTx3", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 400MCG/LOZEN BTx30", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 600MCG/LOZEN BTx3", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 600MCG/LOZEN BTx30", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 800MCG/LOZEN BTx3", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ACTIQ LOZ 800MCG/LOZEN BTx30", p:"Γ", s:"Fentanyl (Max: 4 τροχίσκοι/ημέρα)"},
-        {n:"ALPRAZOLAM/GENERICS TAB 0,25MG", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"ALPRAZOLAM/GENERICS TAB 0,50MG", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"ALPRAZOLAM/GENERICS TAB 0,5MG", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"ALPRAZOLAM/GENERICS TAB 1MG/TAB", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"ASPENDOS TAB 100MG/TAB BTx30", p:"Δ", s:"Modafinil (Max: 400mg/ημέρα)"},
-        {n:"ATIVAN/WYETH PHARM. INJ.SO.INF", p:"Δ", s:"Lorazepam (Max: 10mg/ημέρα)"},
-        {n:"BARBITAN INJ.SOL 200MG/2ML BTx", p:"Δ", s:"Phenobarbital (Max: 400mg/ημέρα)"},
-        {n:"BUCCOLAM ORAL.SOL 7,5MG/ML BTx1 VIAL", p:"Δ", s:"Midazolam (Max: 10mg/δόση - Βάσει ηλικίας)"},
-        {n:"BUPRENAL/VIOGEN SUBL.TAB 0.4MG", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"BUPRENAL/VIOGEN SUBL.TAB 2MG/T", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"BUPRENAL/VIOGEN SUBL.TAB 8MG/T", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"CENTRAC TAB 10MG/TAB BTx20", p:"Δ", s:"Prazepam (Max: 60mg/ημέρα)"},
-        {n:"CENTRAC TAB 20MG/TAB BTx20", p:"Δ", s:"Prazepam (Max: 60mg/ημέρα)"},
-        {n:"CLONOTRIL TAB 2MG/TAB BTx30", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
-        {n:"CODEINE PHOSPHOR. POWDER 1G", p:"Γ", s:"Codeine (Max: 240mg/ημέρα)"},
-        {n:"CODEINE PHOSPHOR. TAB 20MG/TAB", p:"Γ", s:"Codeine (Max: 240mg/ημέρα)"},
-        {n:"CONCERTA PR.TAB 18MG/TAB", p:"Γ", s:"Methylphenidate (Max: 72mg/ημέρα)"},
-        {n:"CONCERTA PR.TAB 36MG/TAB", p:"Γ", s:"Methylphenidate (Max: 72mg/ημέρα)"},
-        {n:"CONCERTA PR.TAB 54MG/TAB", p:"Γ", s:"Methylphenidate (Max: 72mg/ημέρα)"},
-        {n:"DAMIZOL INJ.SOL 50MG/10ML BTx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DEMOGYL TTS 100MCG/H BTx5 x60c", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DEMOGYL TTS 25MCG/H BTx5 PATCH", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DEMOGYL TTS 50MCG/H BTx5 PATCH", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DEMOGYL TTS 75MCG/H BTx5 x45cm", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DIAZEPAM DESITIN REC.SOL 5MG/2", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"DIAZEPAM RECTUBES REC.SOL 5MG", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"DIPHENAL TAB (100+25)MG/TAB BT", p:"Δ", s:"Phenobarbital / Phenytoin (Max: 400mg Phenob./ημέρα)"},
-        {n:"DIPHENAL-FORTE TAB (100+50)MG", p:"Δ", s:"Phenobarbital / Phenytoin (Max: 400mg Phenob./ημέρα)"},
-        {n:"DISTEDON C.TAB (2+2.5)MG/TAB BT", p:"Δ", s:"Diazepam / Atropine (Max: 30mg Diazepam/ημέρα)"},
-        {n:"DORM TAB 1MG/TAB BTx20", p:"Δ", s:"Midazolam (Max: 15mg/ημέρα)"},
-        {n:"DORM TAB 2,5MG/TAB BTx20", p:"Δ", s:"Midazolam (Max: 15mg/ημέρα)"},
-        {n:"DORMICUM INJ.SOL 15MG/3ML Bx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMICUM INJ.SOL 50MG/10ML BTx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIDEN PD.CSO.J.F 1MG/VIAL", p:"Γ", s:"Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIDEN PD.CSO.J.F 2MG/VIAL", p:"Γ", s:"Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIDEN PD.CSO.J.F 5MG/VIAL", p:"Γ", s:"Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIPNOL INJ.SOL 15MG/3ML BTx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIPNOL INJ.SOL 50MG/10ML BTx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIXAL INJ.SOL 15MG/3ML BTx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DORMIXAL INJ.SOL 50MG/10ML BTx5", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"DUROGESIC TTS 100MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DUROGESIC TTS 12MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DUROGESIC TTS 25MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DUROGESIC TTS 50MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"DUROGESIC TTS 75MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"EPISTATUS ORAL.SOL 10MG/ML BTx1 VIAL", p:"Δ", s:"Midazolam (Max: 10mg/δόση - Βάσει ηλικίας)"},
-        {n:"FENTADUR TTS 100MCG/H BTx5 SAC", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"FENTADUR TTS 12MCG/H BTx5 SACH", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"FENTADUR TTS 25MCG/H BTx5 SACH", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"FENTADUR TTS 50MCG/H BTx5 SACH", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"FENTADUR TTS 75MCG/H BTx5 SACH", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"FORTAL/SANOFI INJ.SO.INF 30MG", p:"Γ", s:"Pentazocine (Max: 360mg/ημέρα)"},
-        {n:"FORTAL/SANOFI CAPS 50MG/CAP BT", p:"Γ", s:"Pentazocine (Max: 360mg/ημέρα)"},
-        {n:"FRISIUM TAB 10MG/TAB BTx20", p:"Δ", s:"Clobazam (Max: 60mg/ημέρα)"},
-        {n:"GARDENAL TAB 100MG/TAB BTx20", p:"Δ", s:"Phenobarbital (Max: 400mg/ημέρα)"},
-        {n:"HALCION TAB 0,25MG/TAB BTx10", p:"Δ", s:"Triazolam (Max: 0.5mg/ημέρα)"},
-        {n:"HIPNOSEDON F.C.TAB 1MG/TAB BTx30", p:"Δ", s:"Flunitrazepam (Max: 1mg/ημέρα)"},
-        {n:"HYPNONORM F.C.TAB 10MG/TAB BTx30", p:"Δ", s:"Zolpidem (Max: 10mg/ημέρα)"},
-        {n:"ILMAN TAB 2MG/TAB BTx30", p:"Δ", s:"Lormetazepam (Max: 2mg/ημέρα)"},
-        {n:"IMOVANE F.C.TAB 7,5MG/TAB BTx3", p:"Δ", s:"Zopiclone (Max: 7.5mg/ημέρα)"},
-        {n:"IONSYS ITS 40MCG/DOSE BTx1 SACH.", p:"Γ", s:"Fentanyl (Νοσοκομειακή Χρήση / Συσκευή)"},
-        {n:"KANEURON/SERB OR.SO.D 5,4G/100", p:"Δ", s:"Phenobarbital (Max: 400mg/ημέρα)"},
-        {n:"KETAMIN/ACTAVIS INJ.SOL 10MG/MG", p:"Γ", s:"Ketamine (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"KETAMINE/DELTA SELECT INJ.SO.", p:"Γ", s:"Ketamine (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"LEXOTANIL TAB 1,5MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"LEXOTANIL TAB 3MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"LEXOTANIL TAB 6MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"LIBRAX /ICN ΕΛΒΕΤΙΑ C.TAB (5+2.5) X30", p:"Δ", s:"Chlordiazepoxide / Clidinium (Max: 100mg Chlord./ημέρα)"},
-        {n:"LIBRAX C.TAB (5+2.5)MG/TAB BTx 60", p:"Δ", s:"Chlordiazepoxide / Clidinium (Max: 100mg Chlord./ημέρα)"},
-        {n:"LONALGAL TAB (500+30)MG/TAB BT", p:"ΓΣ", s:"Paracetamol / Codeine (Max: 240mg Codeine/ημέρα)"},
-        {n:"LONARID-N TAB (400+50+10)MG/TABS", p:"ΓΣ", s:"Paracetamol / Codeine / Caffeine (Max: 240mg Codeine/ημέρα)"},
-        {n:"MATRIFEN TTS 100MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MATRIFEN TTS 12MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MATRIFEN TTS 25MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MATRIFEN TTS 50MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MATRIFEN TTS 75MCG/H BTx5 TTS", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MEGANYL INJ.SOL 0,05MG/10ML BT", p:"Γ", s:"Fentanyl (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"MEGANYL INJ.SOL 0,05MG/ML BTx5", p:"Γ", s:"Fentanyl (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"MEXIFEN INJ.SOL 20MG/2ML BTx10", p:"Γ", s:"Nefopam (Max: 120mg/ημέρα)"},
-        {n:"MIDAZOLAM/B.BRAUN INJ.SOL 15MG", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"MIDAZOLAM/B.BRAUN INJ.SOL 50MG", p:"Δ", s:"Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"MODIODAL TAB 100MG/TAB BTx30", p:"Δ", s:"Modafinil (Max: 400mg/ημέρα)"},
-        {n:"MYFENE TTS 100MCG/H BTx5 TTSx6", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MYFENE TTS 25MCG/H BTx5 TTSx15", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MYFENE TTS 50MCG/H BTx5 TTSx30", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"MYFENE TTS 75MCG/H BTx5 TTSx45", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
-        {n:"NALBUPHINE/SERB FRANCE INJ.SO.", p:"Γ", s:"Nalbuphine (Max: 160mg/ημέρα)"},
-        {n:"NOTORIUM TAB 1.5MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"NOTORIUM TAB 3MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"NOTORIUM TAB 6MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"NOVHEPARTAB 1MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"NOVHEPARTAB 2.5MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"OASIL MOD.R.CA.H 15MG/CAP BTx2", p:"Δ", s:"Oxazepam (Max: 120mg/ημέρα)"},
-        {n:"ONIRIA OR.SO.D 10MG/ML BOTTLE", p:"Δ", s:"Zolpidem (Max: 10mg/ημέρα)"},
-        {n:"PALEXIA F.C.TAB 50MG/TAB ΒΤχ30", p:"Γ", s:"Tapentadol (Max: 600mg/ημέρα)"},
-        {n:"PALEXIA F.C.TAB 75MG/TAB ΒΤx30", p:"Γ", s:"Tapentadol (Max: 600mg/ημέρα)"},
-        {n:"PALEXIA RETARD PR.TAB 100MG/TAB", p:"Γ", s:"Tapentadol (Max: 500mg/ημέρα)"},
-        {n:"PALEXIA RETARD PR.TAB 150MG/TAB", p:"Γ", s:"Tapentadol (Max: 500mg/ημέρα)"},
-        {n:"PALEXIA RETARD PR.TAB 200MG/TAB", p:"Γ", s:"Tapentadol (Max: 500mg/ημέρα)"},
-        {n:"PALEXIA RETARD PR.TAB 250MG/TAB", p:"Γ", s:"Tapentadol (Max: 500mg/ημέρα)"},
-        {n:"PALEXIA RETARD PR.TAB 50MG/TAB", p:"Γ", s:"Tapentadol (Max: 500mg/ημέρα)"},
-        {n:"PASCALIUM TAB 1,5MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"PASCALIUM TAB 3MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"PASCALIUM TAB 6MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
-        {n:"PENTOTHAL DR.PD.INJ 1G/VIAL BT", p:"Δ", s:"Thiopental (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"PRENORVINE SUBL.TAB 2MG/TAB BT", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"PRENORVINE SUBL.TAB 8MG/TAB BT", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"RITALIN/NOVARTIS TAB 10MG/TAB", p:"Γ", s:"Methylphenidate (Max: 60mg/ημέρα)"},
-        {n:"RIVOTRIL ORAL DR. 2,5MG/ML VIAL", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
-        {n:"RIVOTRIL TAB 0,5MG/TAB BTx50", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
-        {n:"RIVOTRIL TAB 2MG/TAB BTx28", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
-        {n:"SATURNIL TAB 0,25MG/TAB ΒΤx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"SATURNIL TAB 0,5MG/TAB ΒΤx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"SIVAL-B SYR (7,5+5,0)MG/5ML FL", p:"ΓΣ", s:"Συνδυασμός Κωδεΐνης (Max: 240mg Codeine/ημέρα)"},
-        {n:"SONATA CAPS 10MG/CAP BTx14", p:"Δ", s:"Zaleplon (Max: 10mg/ημέρα)"},
-        {n:"STEDON INJ.SOL 10MG/2ML BTx6", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"STEDON TAB 10MG/TAB BTx30", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"STEDON TAB 2MG/TAB BTx30", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"STEDON TAB 5MG/TAB BTx30", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"STESOLID REC.SOL 5MG/SD BTx5", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"STILNOX F.C.TAB 10MG/TAB BTx3", p:"Δ", s:"Zolpidem (Max: 10mg/ημέρα)"},
-        {n:"SUBOXONE SUBL.TAB (2+0,5)MG/TAB", p:"Δ", s:"Buprenorphine / Naloxone (Max: 24mg Bup./ημέρα)"},
-        {n:"SUBOXONE SUBL.TAB (8+2)MG/TAB", p:"Δ", s:"Buprenorphine / Naloxone (Max: 24mg Bup./ημέρα)"},
-        {n:"TAVOR TAB 1MG/TAB ΒΤχ18", p:"Δ", s:"Lorazepam (Max: 10mg/ημέρα)"},
-        {n:"TAVOR TAB 2,5MG/TAB ΒΤχ18", p:"Δ", s:"Lorazepam (Max: 10mg/ημέρα)"},
-        {n:"THIOPENTAL/INRESA PD.INJ.SOL 1", p:"Δ", s:"Thiopental (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"THIOPENTAL/VUAB PD.INJ.SOL 1G/", p:"Δ", s:"Thiopental (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"TITUS TAB 1MG/TAB BTx20", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"TITUS TAB 2.5MG/TAB BTx20", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"TRAMAL CAPS 50MG/CAP BTx30", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL INJ.SOL 100MG/2ML BTx5", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL OR.SO.D 100MG/ML FLx10M", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL SR PR.TAB 100MG/TAB BT", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL SR PR.TAB 150MG/TAB BT", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL SR PR.TAB 200MG/TAB BT", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL SR PR.TAB 50MG/TAB BTx6", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRAMAL SUPP 100MG/SUP BTx10", p:"Δ", s:"Tramadol (Max: 400mg/ημέρα)"},
-        {n:"TRANKILIUM TAB 1MG/TAB ΒΤχ20", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"TRANKILIUM TAB 2.5MG/TAB ΒΤx20", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"TRANXENE F.C.TAB 20MG/TAB ΒΤx1", p:"Δ", s:"Clorazepate (Max: 90mg/ημέρα)"},
-        {n:"TROPIUM INJ.SOL 100MG/2ML BTx5", p:"Δ", s:"Chlordiazepoxide (Max: 100mg/ημέρα)"},
-        {n:"ULTIZEN PD.CSO.J.F 2MG/VIAL BT", p:"Γ", s:"Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"ULTIZEN PD.CSO.J.F 5MG/VIAL BT", p:"Γ", s:"Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
-        {n:"VULBEGAL TAB 2MG/TAB BTx30", p:"Δ", s:"Lormetazepam (Max: 2mg/ημέρα)"},
-        {n:"XANAX TAB 0,25MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"XANAX TAB 0,5MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"XANAX TAB 1MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"XANAX TAB 2MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
-        {n:"ZALDIAR F.C.TAB (37,5+325)MG/T", p:"Δ", s:"Tramadol / Paracetamol (Max: 400mg Tramadol/ημέρα)"},
-        {n:"ZOLPIDIEM/SANDOZ F.C.TAB 10MG", p:"Δ", s:"Zolpidem (Max: 10mg/ημέρα)"},
+        {"n": "ABSTRAL SUBL.TAB 100MCG/TAB BTx30", "p": "Γ", "s": "Fentanyl (Max: 3200mcg/ημ.)", "mb": 30},
+        {"n": "ABSTRAL SUBL.TAB 200MCG/TAB BTx30", "p": "Γ", "s": "Fentanyl (Max: 3200mcg/ημ.)", "mb": 15},
+        {"n": "ABSTRAL SUBL.TAB 300MCG/TAB BTx30", "p": "Γ", "s": "Fentanyl (Max: 3200mcg/ημ.)", "mb": 10},
+        {"n": "ABSTRAL SUBL.TAB 400MCG/TAB BTx30", "p": "Γ", "s": "Fentanyl (Max: 3200mcg/ημ.)", "mb": 8},
+        {"n": "ABSTRAL SUBL.TAB 600MCG/TAB BTx30", "p": "Γ", "s": "Fentanyl (Max: 3200mcg/ημ.)", "mb": 5},
+        {"n": "ABSTRAL SUBL.TAB 800MCG/TAB BTx30", "p": "Γ", "s": "Fentanyl (Max: 3200mcg/ημ.)", "mb": 4},
+        {"n": "ACTIQ LOZ 1200MCG/LOZEN BTx30", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 4},
+        {"n": "ACTIQ LOZ 1600MCG/LOZEN BTx3", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 38},
+        {"n": "ACTIQ LOZ 1600MCG/LOZEN BTx30", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 4},
+        {"n": "ACTIQ LOZ 200MCG/LOZEN BTx3", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 38},
+        {"n": "ACTIQ LOZ 200MCG/LOZEN BTx30", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 4},
+        {"n": "ACTIQ LOZ 400MCG/LOZEN BTx3", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 38},
+        {"n": "ACTIQ LOZ 400MCG/LOZEN BTx30", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 4},
+        {"n": "ACTIQ LOZ 600MCG/LOZEN BTx3", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 38},
+        {"n": "ACTIQ LOZ 600MCG/LOZEN BTx30", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 4},
+        {"n": "ACTIQ LOZ 800MCG/LOZEN BTx3", "p": "Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 38},
+        {"n": "ACTIQ LOZ 800MCG/LOZEN BTx30", p:"Γ", "s": "Fentanyl (Max: 4 τροχίσκοι/ημ.)", "mb": 4},
+        {"n": "ALPRAZOLAM/GENERICS TAB 0,25MG", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 15},
+        {"n": "ALPRAZOLAM/GENERICS TAB 0,50MG", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 8},
+        {"n": "ALPRAZOLAM/GENERICS TAB 1MG/TAB", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 4},
+        {"n": "ASPENDOS TAB 100MG/TAB BTx30", "p": "Δ", "s": "Modafinil (Max: 400mg/ημ.)", "mb": 4},
+        {"n": "ATIVAN/WYETH PHARM. INJ.SO.INF", "p": "Δ", "s": "Lorazepam (Max: 10mg/ημ.)", "mb": "N/A"},
+        {"n": "BARBITAN INJ.SOL 200MG/2ML BTx", "p": "Δ", "s": "Phenobarbital (Max: 400mg/ημ.)", "mb": "N/A"},
+        {"n": "BUCCOLAM ORAL.SOL 7,5MG/ML BTx1 VIAL", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "BUPRENAL/VIOGEN SUBL.TAB 0.4MG", "p": "Δ", "s": "Buprenorphine (Max: 24mg/ημ.)", "mb": 24},
+        {"n": "BUPRENAL/VIOGEN SUBL.TAB 2MG/T", "p": "Δ", "s": "Buprenorphine (Max: 24mg/ημ.)", "mb": 12},
+        {"n": "BUPRENAL/VIOGEN SUBL.TAB 8MG/T", "p": "Δ", "s": "Buprenorphine (Max: 24mg/ημ.)", "mb": 3},
+        {"n": "CENTRAC TAB 10MG/TAB BTx20", "p": "Δ", "s": "Prazepam (Max: 60mg/ημ.)", "mb": 9},
+        {"n": "CENTRAC TAB 20MG/TAB BTx20", "p": "Δ", "s": "Prazepam (Max: 60mg/ημ.)", "mb": 5},
+        {"n": "CLONOTRIL TAB 2MG/TAB BTx30", "p": "Δ", "s": "Clonazepam (Max: 8mg/ημ.)", "mb": 4},
+        {"n": "CODEINE PHOSPHOR. POWDER 1G", "p": "Γ", "s": "Codeine (Max: 240mg/ημ.)", "mb": "N/A"},
+        {"n": "CODEINE PHOSPHOR. TAB 20MG/TAB", "p": "Γ", "s": "Codeine (Max: 240mg/ημ.)", "mb": 12},
+        {"n": "CONCERTA PR.TAB 18MG/TAB", "p": "Γ", "s": "Methylphenidate (Max: 72mg/ημ.)", "mb": 4},
+        {"n": "CONCERTA PR.TAB 36MG/TAB", "p": "Γ", "s": "Methylphenidate (Max: 72mg/ημ.)", "mb": 2},
+        {"n": "CONCERTA PR.TAB 54MG/TAB", "p": "Γ", "s": "Methylphenidate (Max: 72mg/ημ.)", "mb": 2},
+        {"n": "DAMIZOL INJ.SOL 50MG/10ML BTx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DEMOGYL TTS 100MCG/H BTx5", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DEMOGYL TTS 25MCG/H BTx5 PATCH", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DEMOGYL TTS 50MCG/H BTx5 PATCH", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DEMOGYL TTS 75MCG/H BTx5", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DIAZEPAM DESITIN REC.SOL 5MG/2", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": "N/A"},
+        {"n": "DIAZEPAM RECTUBES REC.SOL 5MG", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": "N/A"},
+        {"n": "DIPHENAL TAB (100+25)MG/TAB BT", "p": "Δ", "s": "Phenobarbital (Max: 400mg/ημ.)", "mb": "N/A"},
+        {"n": "DIPHENAL-FORTE TAB (100+50)MG", "p": "Δ", "s": "Phenobarbital (Max: 400mg/ημ.)", "mb": "N/A"},
+        {"n": "DISTEDON C.TAB (2+2.5)MG/TAB BT", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": "N/A"},
+        {"n": "DORM TAB 1MG/TAB BTx20", "p": "Δ", "s": "Midazolam (Max: 15mg/ημ.)", "mb": 21},
+        {"n": "DORM TAB 2,5MG/TAB BTx20", "p": "Δ", "s": "Midazolam (Max: 15mg/ημ.)", "mb": 9},
+        {"n": "DORMICUM INJ.SOL 15MG/3ML Bx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMICUM INJ.SOL 50MG/10ML BTx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIDEN PD.CSO.J.F 1MG/VIAL", "p": "Γ", "s": "Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIDEN PD.CSO.J.F 2MG/VIAL", "p": "Γ", "s": "Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIDEN PD.CSO.J.F 5MG/VIAL", "p": "Γ", "s": "Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIPNOL INJ.SOL 15MG/3ML BTx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIPNOL INJ.SOL 50MG/10ML BTx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIXAL INJ.SOL 15MG/3ML BTx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DORMIXAL INJ.SOL 50MG/10ML BTx5", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "DUROGESIC TTS 100MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DUROGESIC TTS 12MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DUROGESIC TTS 25MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DUROGESIC TTS 50MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "DUROGESIC TTS 75MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "EPISTATUS ORAL.SOL 10MG/ML BTx1 VIAL", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "FENTADUR TTS 100MCG/H BTx5 SAC", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "FENTADUR TTS 12MCG/H BTx5 SACH", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "FENTADUR TTS 25MCG/H BTx5 SACH", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "FENTADUR TTS 50MCG/H BTx5 SACH", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "FENTADUR TTS 75MCG/H BTx5 SACH", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "FORTAL/SANOFI INJ.SO.INF 30MG", "p": "Γ", "s": "Pentazocine (Max: 360mg/ημ.)", "mb": "N/A"},
+        {"n": "FORTAL/SANOFI CAPS 50MG/CAP BT", "p": "Γ", "s": "Pentazocine (Max: 360mg/ημ.)", "mb": "N/A"},
+        {"n": "FRISIUM TAB 10MG/TAB BTx20", "p": "Δ", "s": "Clobazam (Max: 60mg/ημ.)", "mb": 9},
+        {"n": "GARDENAL TAB 100MG/TAB BTx20", "p": "Δ", "s": "Phenobarbital (Max: 400mg/ημ.)", "mb": 6},
+        {"n": "HALCION TAB 0,25MG/TAB BTx10", "p": "Δ", "s": "Triazolam (Max: 0.5mg/ημ.)", "mb": 6},
+        {"n": "HIPNOSEDON F.C.TAB 1MG/TAB BTx30", "p": "Δ", "s": "Flunitrazepam (Max: 1mg/ημ.)", "mb": 1},
+        {"n": "HYPNONORM F.C.TAB 10MG/TAB BTx30", "p": "Δ", "s": "Zolpidem (Max: 10mg/ημ.)", "mb": 1},
+        {"n": "ILMAN TAB 2MG/TAB BTx30", "p": "Δ", "s": "Lormetazepam (Max: 2mg/ημ.)", "mb": 1},
+        {"n": "IMOVANE F.C.TAB 7,5MG/TAB BTx3", "p": "Δ", "s": "Zopiclone (Max: 7.5mg/ημ.)", "mb": "N/A"},
+        {"n": "IONSYS ITS 40MCG/DOSE BTx1 SACH.", "p": "Γ", "s": "Fentanyl (Νοσοκομειακή Χρήση)", "mb": "N/A"},
+        {"n": "KANEURON/SERB OR.SO.D 5,4G/100", "p": "Δ", "s": "Phenobarbital (Max: 400mg/ημ.)", "mb": "N/A"},
+        {"n": "KETAMIN/ACTAVIS INJ.SOL 10MG/MG", "p": "Γ", "s": "Ketamine (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "KETAMINE/DELTA SELECT INJ.SO.", "p": "Γ", "s": "Ketamine (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "LEXOTANIL TAB 1,5MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 12},
+        {"n": "LEXOTANIL TAB 3MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 6},
+        {"n": "LEXOTANIL TAB 6MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 3},
+        {"n": "LIBRAX /ICN ΕΛΒΕΤΙΑ C.TAB (5+2.5) X30", "p": "Δ", "s": "Chlordiazepoxide (Max: 100mg/ημ.)", "mb": 20},
+        {"n": "LIBRAX C.TAB (5+2.5)MG/TAB BTx 60", "p": "Δ", "s": "Chlordiazepoxide (Max: 100mg/ημ.)", "mb": 10},
+        {"n": "LONALGAL TAB (500+30)MG/TAB BT", "p": "ΓΣ", "s": "Codeine Combo (Max: 240mg Codeine/ημ.)", "mb": "N/A"},
+        {"n": "LONARID-N TAB (400+50+10)MG/TABS", "p": "ΓΣ", "s": "Codeine Combo (Max: 240mg Codeine/ημ.)", "mb": "N/A"},
+        {"n": "MATRIFEN TTS 100MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MATRIFEN TTS 12MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MATRIFEN TTS 25MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MATRIFEN TTS 50MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MATRIFEN TTS 75MCG/H BTx5 TTS", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MEGANYL INJ.SOL 0,05MG/10ML BT", "p": "Γ", "s": "Fentanyl (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "MEGANYL INJ.SOL 0,05MG/ML BTx5", "p": "Γ", "s": "Fentanyl (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "MEXIFEN INJ.SOL 20MG/2ML BTx10", "p": "Γ", "s": "Nefopam (Max: 120mg/ημ.)", "mb": "N/A"},
+        {"n": "MIDAZOLAM/B.BRAUN INJ.SOL 15MG", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "MIDAZOLAM/B.BRAUN INJ.SOL 50MG", "p": "Δ", "s": "Midazolam (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "MODIODAL TAB 100MG/TAB BTx30", "p": "Δ", "s": "Modafinil (Max: 400mg/ημ.)", "mb": 4},
+        {"n": "MYFENE TTS 100MCG/H BTx5 TTSx6", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MYFENE TTS 25MCG/H BTx5 TTSx15", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MYFENE TTS 50MCG/H BTx5 TTSx30", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "MYFENE TTS 75MCG/H BTx5 TTSx45", "p": "Γ", "s": "Fentanyl (Αλλαγή ανά 72 ώρες)", "mb": 2},
+        {"n": "NALBUPHINE/SERB FRANCE INJ.SO.", "p": "Γ", "s": "Nalbuphine (Max: 160mg/ημ.)", "mb": "N/A"},
+        {"n": "NOTORIUM TAB 1.5MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 12},
+        {"n": "NOTORIUM TAB 3MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 6},
+        {"n": "NOTORIUM TAB 6MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 3},
+        {"n": "NOVHEPARTAB 1MG/TAB BTx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 4},
+        {"n": "NOVHEPARTAB 2.5MG/TAB BTx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 2},
+        {"n": "OASIL MOD.R.CA.H 15MG/CAP BTx2", "p": "Δ", "s": "Oxazepam (Max: 120mg/ημ.)", "mb": "N/A"},
+        {"n": "ONIRIA OR.SO.D 10MG/ML BOTTLE", "p": "Δ", "s": "Zolpidem (Max: 10mg/ημ.)", "mb": "N/A"},
+        {"n": "PALEXIA F.C.TAB 50MG/TAB ΒΤχ30", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 12},
+        {"n": "PALEXIA F.C.TAB 75MG/TAB ΒΤx30", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 8},
+        {"n": "PALEXIA RETARD PR.TAB 100MG/TAB", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 6},
+        {"n": "PALEXIA RETARD PR.TAB 150MG/TAB", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 4},
+        {"n": "PALEXIA RETARD PR.TAB 200MG/TAB", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 3},
+        {"n": "PALEXIA RETARD PR.TAB 250MG/TAB", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 3},
+        {"n": "PALEXIA RETARD PR.TAB 50MG/TAB", "p": "Γ", "s": "Tapentadol (Max: 600mg/ημ.)", "mb": 12},
+        {"n": "PASCALIUM TAB 1,5MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 12},
+        {"n": "PASCALIUM TAB 3MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 6},
+        {"n": "PASCALIUM TAB 6MG/TAB BTx30", "p": "Δ", "s": "Bromazepam (Max: 18mg/ημ.)", "mb": 3},
+        {"n": "PENTOTHAL DR.PD.INJ 1G/VIAL BT", "p": "Δ", "s": "Thiopental (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "PRENORVINE SUBL.TAB 2MG/TAB BT", "p": "Δ", "s": "Buprenorphine (Max: 24mg/ημ.)", "mb": 12},
+        {"n": "PRENORVINE SUBL.TAB 8MG/TAB BT", "p": "Δ", "s": "Buprenorphine (Max: 24mg/ημ.)", "mb": 3},
+        {"n": "RITALIN/NOVARTIS TAB 10MG/TAB", "p": "Γ", "s": "Methylphenidate (Max: 60mg/ημ.)", "mb": 6},
+        {"n": "RIVOTRIL ORAL DR. 2,5MG/ML VIAL", "p": "Δ", "s": "Clonazepam (Max: 8mg/ημ.)", "mb": "N/A"},
+        {"n": "RIVOTRIL TAB 0,5MG/TAB BTx50", "p": "Δ", "s": "Clonazepam (Max: 8mg/ημ.)", "mb": 9},
+        {"n": "RIVOTRIL TAB 2MG/TAB BTx28", "p": "Δ", "s": "Clonazepam (Max: 8mg/ημ.)", "mb": 4},
+        {"n": "SATURNIL TAB 0,25MG/TAB ΒΤx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 15},
+        {"n": "SATURNIL TAB 0,5MG/TAB ΒΤx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 8},
+        {"n": "SIVAL-B SYR (7,5+5,0)MG/5ML FL", "p": "ΓΣ", "s": "Codeine Combo (Max: 240mg Codeine/ημ.)", "mb": "N/A"},
+        {"n": "SONATA CAPS 10MG/CAP BTx14", "p": "Δ", "s": "Zaleplon (Max: 10mg/ημ.)", "mb": 2},
+        {"n": "STEDON INJ.SOL 10MG/2ML BTx6", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": 14},
+        {"n": "STEDON TAB 10MG/TAB BTx30", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": 3},
+        {"n": "STEDON TAB 2MG/TAB BTx30", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": 14},
+        {"n": "STEDON TAB 5MG/TAB BTx30", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": 6},
+        {"n": "STESOLID REC.SOL 5MG/SD BTx5", "p": "Δ", "s": "Diazepam (Max: 30mg/ημ.)", "mb": 34},
+        {"n": "STILNOX F.C.TAB 10MG/TAB BTx30", "p": "Δ", "s": "Zolpidem (Max: 10mg/ημ.)", "mb": 1},
+        {"n": "SUBOXONE SUBL.TAB (2+0,5)MG/TAB", "p": "Δ", "s": "Buprenorphine / Naloxone (Max: 24mg Bup./ημ.)", "mb": "N/A"},
+        {"n": "SUBOXONE SUBL.TAB (8+2)MG/TAB", "p": "Δ", "s": "Buprenorphine / Naloxone (Max: 24mg Bup./ημ.)", "mb": "N/A"},
+        {"n": "TAVOR TAB 1MG/TAB ΒΤχ20", "p": "Δ", "s": "Lorazepam (Max: 10mg/ημ.)", "mb": 14},
+        {"n": "TAVOR TAB 2,5MG/TAB ΒΤχ20", "p": "Δ", "s": "Lorazepam (Max: 10mg/ημ.)", "mb": 6},
+        {"n": "THIOPENTAL/INRESA PD.INJ.SOL 1G", "p": "Δ", "s": "Thiopental (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "THIOPENTAL/VUAB PD.INJ.SOL 1G", "p": "Δ", "s": "Thiopental (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "TITUS TAB 1MG/TAB BTx20", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 6},
+        {"n": "TITUS TAB 2.5MG/TAB BTx20", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 3},
+        {"n": "TRAMAL CAPS 50MG/CAP BTx30", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 8},
+        {"n": "TRAMAL INJ.SOL 100MG/2ML BTx5", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 23},
+        {"n": "TRAMAL OR.SO.D 100MG/ML FLx10M", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": "N/A"},
+        {"n": "TRAMAL SR PR.TAB 100MG/TAB BTx30", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 4},
+        {"n": "TRAMAL SR PR.TAB 150MG/TAB BTx30", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 3},
+        {"n": "TRAMAL SR PR.TAB 200MG/TAB BTx30", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 2},
+        {"n": "TRAMAL SR PR.TAB 50MG/TAB BTx60", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 4},
+        {"n": "TRAMAL SUPP 100MG/SUP BTx10", "p": "Δ", "s": "Tramadol (Max: 400mg/ημ.)", "mb": 12},
+        {"n": "TRANKILIUM TAB 1MG/TAB ΒΤχ20", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 6},
+        {"n": "TRANKILIUM TAB 2.5MG/TAB ΒΤx20", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 3},
+        {"n": "TRANXENE F.C.TAB 20MG/TAB ΒΤx30", "p": "Δ", "s": "Clorazepate (Max: 90mg/ημ.)", "mb": 5},
+        {"n": "TROPIUM INJ.SOL 100MG/2ML BTx5", "p": "Δ", "s": "Chlordiazepoxide (Max: 100mg/ημ.)", "mb": 6},
+        {"n": "ULTIZEN PD.CSO.J.F 2MG/VIAL BT", "p": "Γ", "s": "Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "ULTIZEN PD.CSO.J.F 5MG/VIAL BT", "p": "Γ", "s": "Remifentanil (Νοσοκομειακή Χρήση / Βάσει βάρους)", "mb": "N/A"},
+        {"n": "VULBEGAL TAB 2MG/TAB BTx30", "p": "Δ", "s": "Lormetazepam (Max: 2mg/ημ.)", "mb": 1},
+        {"n": "XANAX TAB 0,25MG/TAB BTx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 15},
+        {"n": "XANAX TAB 0,5MG/TAB BTx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 8},
+        {"n": "XANAX TAB 1MG/TAB BTx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 4},
+        {"n": "XANAX TAB 2MG/TAB BTx30", "p": "Δ", "s": "Alprazolam (Max: 4mg/ημ.)", "mb": 2},
+        {"n": "ZALDIAR F.C.TAB (37,5+325)MG/T", "p": "Δ", "s": "Tramadol / Paracetamol (Max: 400mg Tramadol/ημ.)", "mb": "N/A"},
+        {"n": "ZOLPIDIEM/SANDOZ F.C.TAB 10MG", "p": "Δ", "s": "Zolpidem (Max: 10mg/ημ.)", "mb": 1},
 	{n:"BEDROCAN CANNABIS FLOS 22% THC", p:"Γ", s:"Cannabis flos (Ιατρική Κάνναβη)"},
 	{n:"BEDIOL CANNABIS FLOS 6.3% THC / 8% CBD", p:"Γ", s:"Cannabis flos (Ιατρική Κάνναβη)"},
 	{n:"BEDICA CANNABIS FLOS 14% THC", p:"Γ", s:"Cannabis flos (Ιατρική Κάνναβη)"},
@@ -488,61 +439,72 @@
 	{n:"TILRAY THC 18 OIL", p:"Γ", s:"Cannabis extract (Ιατρική Κάνναβη)"}
     ];
 
-    const tbody = document.getElementById('table-body');
-    allDrugs.forEach((drug, i) => {
-        tbody.innerHTML += `<tr>
-            <td style="text-align:center">${i+1}</td>
-            <td><span class="drug-name">${drug.n}</span><span class="drug-sub">${drug.s}</span></td>
-            <td style="text-align:center; font-weight:bold;">${drug.p}</td>
-            <td style="text-align:center;"><input type="number" class="stock-input user-input" placeholder="0"></td>
-        </tr>`;
-    });
-
-    function processAndDownload() {
-        const consentChecked = document.getElementById('zarkolia-consent').checked;
-        
-        if (consentChecked) {
-            const formData = {
-                name: document.getElementById('ph_name').value || "Άγνωστο",
-                surname: document.getElementById('ph_surname').value || "Άγνωστο",
-                phone: document.getElementById('ph_phone').value || "-",
-                email: document.getElementById('ph_email').value || "-"
-            };
-
-            // Αποστολή στο Google Apps Script (χωρίς να μπλοκάρει τη ροή σε περίπτωση λάθους)
-            fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            }).then(() => {
-                console.log("Δεδομένα στάλθηκαν επιτυχώς στο Google Sheets.");
-            }).catch(err => {
-                console.error("Σφάλμα αποστολής στο Google Sheets:", err);
-            });
-        }
-
-        // Προετοιμασία για καθαρό PDF
-        const inputs = document.querySelectorAll('.user-input');
-        inputs.forEach(inp => inp.classList.add('print-mode'));
-
-        const element = document.getElementById('form-content');
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: 'Apografi_Narkotikon.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'avoid-all', 'legacy'] }
-        };
-        
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Επαναφορά της εμφάνισης των πεδίων μετά την εκτύπωση
-            inputs.forEach(inp => inp.classList.remove('print-mode'));
+    function renderTable() {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = "";
+        allDrugs.forEach((drug, i) => {
+            const limitHtml = drug.mb !== "N/A" ? `<span class="limit-label no-print">Μέγιστο όριο 28 ημερών: ${drug.mb} κουτιά</span>` : `<span class="limit-label no-print" style="color:#777;">Όριο 28 ημερών: Εξαρτάται από δοσολογία/βάρος</span>`;
+            tbody.innerHTML += `<tr>
+                <td style="text-align:center">${i+1}</td>
+                <td>
+                    <span class="drug-name">${drug.n}</span>
+                    <span class="drug-sub">${drug.s}</span>
+                    ${limitHtml}
+                </td>
+                <td style="text-align:center; font-weight:bold; color: var(--primary-blue);">${drug.p}</td>
+                <td style="text-align:center;"><input type="number" class="stock-input user-input" placeholder="0"></td>
+            </tr>`;
         });
     }
-</script>
 
+    function liveSearch() {
+        const query = document.getElementById('drugSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#table-body tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.classList.toggle('hidden', !text.includes(query));
+        });
+    }
+
+    function updateAddress() {
+        const val = document.getElementById("region-select").value;
+        document.getElementById("region-address").value = regionAddresses[val] || "";
+        document.getElementById("print-region-title").innerText = val;
+    }
+
+    async function processAndDownload() {
+        // 1. Αποστολή στο Google Sheets (Webhook)
+        if (document.getElementById('zarkolia-consent').checked) {
+            const data = {
+                surname: document.getElementById('ph_surname').value,
+                name: document.getElementById('ph_name').value,
+                phone: document.getElementById('ph_phone').value,
+                email: document.getElementById('ph_email').value
+            };
+            fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        }
+
+        // 2. Καθαρισμός για το PDF
+        const inputs = document.querySelectorAll('.user-input');
+        inputs.forEach(el => el.classList.add('print-mode'));
+
+        const phSurname = document.getElementById('ph_surname').value || 'Pharmacist';
+        const opt = {
+            margin: 10,
+            filename: `Apografi_Narkotikon_${phSurname}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'avoid-all'] }
+        };
+
+        html2pdf().set(opt).from(document.getElementById('form-content')).save().then(() => {
+            // Επαναφορά της εμφάνισης των πεδίων μετά την εκτύπωση
+            inputs.forEach(el => el.classList.remove('print-mode'));
+        });
+    }
+
+    window.onload = renderTable;
+</script>
 </body>
 </html>
