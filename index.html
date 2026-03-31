@@ -57,6 +57,9 @@
         .law-link:hover { background: #eef5fb; border-color: #0056b3; }
         .law-block { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
 
+        /* Credits Developer */
+        .developer-credit { max-width: 1000px; margin: 20px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; border-top: 3px solid #28a745; font-size: 14px; color: #333; line-height: 1.5; }
+
         @media print {
             .no-print { display: none !important; }
         }
@@ -234,7 +237,14 @@
     </div>
 </div>
 
+<div class="developer-credit no-print">
+    <p style="margin: 0;">Το παρόν πρόγραμμα έχει αναπτυχθεί από τον <strong>Παναγιώτη Ζαρογουλίδη</strong>, Φαρμακοποιό, MSc, MBA, Διαμεσολαβητή, για όλους τους φαρμακοποιούς της χώρας.</p>
+</div>
+
 <script>
+    // ΣΗΜΑΝΤΙΚΟ: Το URL του Google Apps Script για την αποθήκευση των στοιχείων!
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVlcMrSoLThTDlYNOViS-i6vB-ifxCeGFoThjDgbbjaUeOx3q4qXcriwUCsvoCw3jL/exec";
+
     const regionAddresses = {
         "ΠΕ Κεντρικού Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΛεωφόρος Αλεξάνδρας 196, 11521 Αθήνα",
         "ΠΕ Βόρειου Τομέα Αθηνών": "Διεύθυνση Δημόσιας Υγείας & Κοινωνικής Μέριμνας\nΤμήμα Φαρμάκων & Φαρμακείων\nΛεωφόρος Κηφισίας 20, 11526 Αθήνα",
@@ -326,17 +336,14 @@
         {n:"ALPRAZOLAM/GENERICS TAB 1MG/TAB", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
         {n:"ASPENDOS TAB 100MG/TAB BTx30", p:"Δ", s:"Modafinil (Max: 400mg/ημέρα)"},
         {n:"ATIVAN/WYETH PHARM. INJ.SO.INF", p:"Δ", s:"Lorazepam (Max: 10mg/ημέρα)"},
-        {n:"BARBITAN INJ.SOL 200MG/2ML BTx", p:"Δ", s:"Phenobarbital (Max: 600mg/ημέρα)"},
+        {n:"BARBITAN INJ.SOL 200MG/2ML BTx", p:"Δ", s:"Phenobarbital (Max: 400mg/ημέρα)"},
         {n:"BUCCOLAM ORAL.SOL 7,5MG/ML BTx1 VIAL", p:"Δ", s:"Midazolam (Max: 10mg/δόση - Βάσει ηλικίας)"},
         {n:"BUPRENAL/VIOGEN SUBL.TAB 0.4MG", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"BUPRENAL/VIOGEN SUBL.TAB 0.4MG", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
         {n:"BUPRENAL/VIOGEN SUBL.TAB 2MG/T", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"BUPRENAL/VIOGEN SUBL.TAB 2MG/T", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
-        {n:"BUPRENAL/VIOGEN SUBL.TAB 8MG/T", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
         {n:"BUPRENAL/VIOGEN SUBL.TAB 8MG/T", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
         {n:"CENTRAC TAB 10MG/TAB BTx20", p:"Δ", s:"Prazepam (Max: 60mg/ημέρα)"},
         {n:"CENTRAC TAB 20MG/TAB BTx20", p:"Δ", s:"Prazepam (Max: 60mg/ημέρα)"},
-        {n:"CLONOTRIL TAB 2MG/TAB BTx30", p:"Δ", s:"Clonazepam (Max: 20mg/ημέρα)"},
+        {n:"CLONOTRIL TAB 2MG/TAB BTx30", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
         {n:"CODEINE PHOSPHOR. POWDER 1G", p:"Γ", s:"Codeine (Max: 240mg/ημέρα)"},
         {n:"CODEINE PHOSPHOR. TAB 20MG/TAB", p:"Γ", s:"Codeine (Max: 240mg/ημέρα)"},
         {n:"CONCERTA PR.TAB 18MG/TAB", p:"Γ", s:"Methylphenidate (Max: 72mg/ημέρα)"},
@@ -349,8 +356,8 @@
         {n:"DEMOGYL TTS 75MCG/H BTx5 x45cm", p:"Γ", s:"Fentanyl (Αλλαγή εμπλάστρου ανά 72 ώρες)"},
         {n:"DIAZEPAM DESITIN REC.SOL 5MG/2", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
         {n:"DIAZEPAM RECTUBES REC.SOL 5MG", p:"Δ", s:"Diazepam (Max: 30mg/ημέρα)"},
-        {n:"DIPHENAL TAB (100+25)MG/TAB BT", p:"Δ", s:"Phenobarbital / Phenytoin (Max: 600mg Phenob./ημέρα)"},
-        {n:"DIPHENAL-FORTE TAB (100+50)MG", p:"Δ", s:"Phenobarbital / Phenytoin (Max: 600mg Phenob./ημέρα)"},
+        {n:"DIPHENAL TAB (100+25)MG/TAB BT", p:"Δ", s:"Phenobarbital / Phenytoin (Max: 400mg Phenob./ημέρα)"},
+        {n:"DIPHENAL-FORTE TAB (100+50)MG", p:"Δ", s:"Phenobarbital / Phenytoin (Max: 400mg Phenob./ημέρα)"},
         {n:"DISTEDON C.TAB (2+2.5)MG/TAB BT", p:"Δ", s:"Diazepam / Atropine (Max: 30mg Diazepam/ημέρα)"},
         {n:"DORM TAB 1MG/TAB BTx20", p:"Δ", s:"Midazolam (Max: 15mg/ημέρα)"},
         {n:"DORM TAB 2,5MG/TAB BTx20", p:"Δ", s:"Midazolam (Max: 15mg/ημέρα)"},
@@ -377,14 +384,14 @@
         {n:"FORTAL/SANOFI INJ.SO.INF 30MG", p:"Γ", s:"Pentazocine (Max: 360mg/ημέρα)"},
         {n:"FORTAL/SANOFI CAPS 50MG/CAP BT", p:"Γ", s:"Pentazocine (Max: 360mg/ημέρα)"},
         {n:"FRISIUM TAB 10MG/TAB BTx20", p:"Δ", s:"Clobazam (Max: 60mg/ημέρα)"},
-        {n:"GARDENAL TAB 100MG/TAB BTx20", p:"Δ", s:"Phenobarbital (Max: 600mg/ημέρα)"},
-        {n:"HALCION TAB 0,25MG/TAB BTx10", p:"Δ", s:"Triazolam (Max: 0.25mg/ημέρα)"},
+        {n:"GARDENAL TAB 100MG/TAB BTx20", p:"Δ", s:"Phenobarbital (Max: 400mg/ημέρα)"},
+        {n:"HALCION TAB 0,25MG/TAB BTx10", p:"Δ", s:"Triazolam (Max: 0.5mg/ημέρα)"},
         {n:"HIPNOSEDON F.C.TAB 1MG/TAB BTx30", p:"Δ", s:"Flunitrazepam (Max: 1mg/ημέρα)"},
-        {n:"HYPNONORM F.C.TAB 10MG/TAB BTx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
+        {n:"HYPNONORM F.C.TAB 10MG/TAB BTx30", p:"Δ", s:"Zolpidem (Max: 10mg/ημέρα)"},
         {n:"ILMAN TAB 2MG/TAB BTx30", p:"Δ", s:"Lormetazepam (Max: 2mg/ημέρα)"},
         {n:"IMOVANE F.C.TAB 7,5MG/TAB BTx3", p:"Δ", s:"Zopiclone (Max: 7.5mg/ημέρα)"},
         {n:"IONSYS ITS 40MCG/DOSE BTx1 SACH.", p:"Γ", s:"Fentanyl (Νοσοκομειακή Χρήση / Συσκευή)"},
-        {n:"KANEURON/SERB OR.SO.D 5,4G/100", p:"Δ", s:"Phenobarbital (Max: 600mg/ημέρα)"},
+        {n:"KANEURON/SERB OR.SO.D 5,4G/100", p:"Δ", s:"Phenobarbital (Max: 400mg/ημέρα)"},
         {n:"KETAMIN/ACTAVIS INJ.SOL 10MG/MG", p:"Γ", s:"Ketamine (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
         {n:"KETAMINE/DELTA SELECT INJ.SO.", p:"Γ", s:"Ketamine (Νοσοκομειακή Χρήση / Βάσει βάρους)"},
         {n:"LEXOTANIL TAB 1,5MG/TAB BTx30", p:"Δ", s:"Bromazepam (Max: 18mg/ημέρα)"},
@@ -431,9 +438,9 @@
         {n:"PRENORVINE SUBL.TAB 2MG/TAB BT", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
         {n:"PRENORVINE SUBL.TAB 8MG/TAB BT", p:"Δ", s:"Buprenorphine (Max: 24mg/ημέρα)"},
         {n:"RITALIN/NOVARTIS TAB 10MG/TAB", p:"Γ", s:"Methylphenidate (Max: 60mg/ημέρα)"},
-        {n:"RIVOTRIL ORAL DR. 2,5MG/ML VIAL", p:"Δ", s:"Clonazepam (Max: 20mg/ημέρα)"},
-        {n:"RIVOTRIL TAB 0,5MG/TAB BTx50", p:"Δ", s:"Clonazepam (Max: 20mg/ημέρα)"},
-        {n:"RIVOTRIL TAB 2MG/TAB BTx28", p:"Δ", s:"Clonazepam (Max: 20mg/ημέρα)"},
+        {n:"RIVOTRIL ORAL DR. 2,5MG/ML VIAL", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
+        {n:"RIVOTRIL TAB 0,5MG/TAB BTx50", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
+        {n:"RIVOTRIL TAB 2MG/TAB BTx28", p:"Δ", s:"Clonazepam (Max: 8mg/ημέρα)"},
         {n:"SATURNIL TAB 0,25MG/TAB ΒΤx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
         {n:"SATURNIL TAB 0,5MG/TAB ΒΤx30", p:"Δ", s:"Alprazolam (Max: 4mg/ημέρα)"},
         {n:"SIVAL-B SYR (7,5+5,0)MG/5ML FL", p:"ΓΣ", s:"Συνδυασμός Κωδεΐνης (Max: 240mg Codeine/ημέρα)"},
@@ -486,23 +493,28 @@
     });
 
     function processAndDownload() {
-        // Εξαγωγή CSV
         const consentChecked = document.getElementById('zarkolia-consent').checked;
+        
         if (consentChecked) {
-            const fName = document.getElementById('ph_name').value || "Άγνωστο";
-            const fSurname = document.getElementById('ph_surname').value || "Άγνωστο";
-            const fPhone = document.getElementById('ph_phone').value || "-";
-            const fEmail = document.getElementById('ph_email').value || "-";
+            const formData = {
+                name: document.getElementById('ph_name').value || "Άγνωστο",
+                surname: document.getElementById('ph_surname').value || "Άγνωστο",
+                phone: document.getElementById('ph_phone').value || "-",
+                email: document.getElementById('ph_email').value || "-"
+            };
 
-            const csvContent = "\uFEFFΌνομα,Επώνυμο,Τηλέφωνο,Email\n" + `${fName},${fSurname},${fPhone},${fEmail}`;
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `ZarkoliaHealth_Contact_${fSurname}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Αποστολή στο Google Apps Script (χωρίς να μπλοκάρει τη ροή σε περίπτωση λάθους)
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            }).then(() => {
+                console.log("Δεδομένα στάλθηκαν επιτυχώς στο Google Sheets.");
+            }).catch(err => {
+                console.error("Σφάλμα αποστολής στο Google Sheets:", err);
+            });
         }
 
         // Προετοιμασία για καθαρό PDF
